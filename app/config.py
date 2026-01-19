@@ -41,6 +41,32 @@ class Settings(BaseSettings):
         default=1.5,
         description="Multiplier for expected tree spacing to detect gaps"
     )
+    missing_tree_sigma_multiplier: float = Field(
+        default=2.0,
+        description="Number of standard deviations for unhealthy tree filtering"
+    )
+    missing_tree_min_distance_ratio: float = Field(
+        default=0.5,
+        description="Minimum distance from existing trees as ratio of expected spacing"
+    )
+    missing_tree_boundary_buffer_ratio: float = Field(
+        default=0.3,
+        description="Buffer from polygon boundary as ratio of expected spacing"
+    )
+    missing_tree_use_row_detection: bool = Field(
+        default=True,
+        description="Whether to attempt row/column pattern detection"
+    )
+    missing_tree_min_candidate_score: float = Field(
+        default=0.3,
+        description="Minimum score for a candidate to be considered valid"
+    )
+    
+    # Logging
+    log_level: str = Field(
+        default="INFO",
+        description="Logging level (DEBUG, INFO, WARNING, ERROR)"
+    )
     
     # Application Settings
     app_name: str = Field(

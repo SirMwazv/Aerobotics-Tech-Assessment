@@ -1,12 +1,21 @@
 """
 FastAPI application entry point.
 """
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.middleware.error_handler import ErrorHandlerMiddleware
 from app.api.v1.routers import orchards
+
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, settings.log_level.upper(), logging.INFO),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger(__name__)
 
 
 # Create FastAPI application
@@ -94,7 +103,10 @@ async def health_check():
 @app.on_event("startup")
 async def startup_event():
     """Run on application startup."""
-    pass
+    logger.info(f"Starting {settings.app_name} v{settings.app_version}")
+    logger.info(f"Log level: {settings.log_level}")
+    logger.info(f"Detection config: threshold_multiplier={settings.missing_tree_threshold_multiplier}, "
+                f"use_row_detection={settings.missing_tree_use_row_detection}")
 
 
 @app.on_event("shutdown")
