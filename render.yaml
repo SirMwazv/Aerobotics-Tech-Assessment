@@ -1,0 +1,32 @@
+# Render.com Blueprint Configuration
+# This file configures the deployment on Render
+
+services:
+  - type: web
+    name: agrotech-geospatial-api
+    env: docker
+    plan: starter
+    region: oregon
+    branch: main
+    healthCheckPath: /health
+    envVars:
+      - key: EXTERNAL_API_BASE_URL
+        value: https://api.aerobotics.com
+      - key: EXTERNAL_API_KEY
+        sync: false  # Set this in Render dashboard as a secret
+      - key: MAX_RETRY_ATTEMPTS
+        value: 3
+      - key: RETRY_BACKOFF_MULTIPLIER
+        value: 1
+      - key: RETRY_MIN_WAIT
+        value: 4
+      - key: RETRY_MAX_WAIT
+        value: 10
+      - key: MISSING_TREE_THRESHOLD_MULTIPLIER
+        value: 1.5
+      - key: APP_NAME
+        value: Agrotech Geospatial Analytics API
+      - key: APP_VERSION
+        value: 1.0.0
+      - key: DEBUG
+        value: False

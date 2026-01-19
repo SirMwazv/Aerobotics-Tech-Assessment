@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - EXTERNAL_API_BASE_URL=${EXTERNAL_API_BASE_URL}
+      - EXTERNAL_API_KEY=${EXTERNAL_API_KEY}
+      - MAX_RETRY_ATTEMPTS=${MAX_RETRY_ATTEMPTS:-3}
+      - RETRY_BACKOFF_MULTIPLIER=${RETRY_BACKOFF_MULTIPLIER:-1}
+      - RETRY_MIN_WAIT=${RETRY_MIN_WAIT:-4}
+      - RETRY_MAX_WAIT=${RETRY_MAX_WAIT:-10}
+      - MISSING_TREE_THRESHOLD_MULTIPLIER=${MISSING_TREE_THRESHOLD_MULTIPLIER:-1.5}
+      - APP_NAME=${APP_NAME:-Agrotech Geospatial Analytics API}
+      - APP_VERSION=${APP_VERSION:-1.0.0}
+      - DEBUG=${DEBUG:-False}
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
