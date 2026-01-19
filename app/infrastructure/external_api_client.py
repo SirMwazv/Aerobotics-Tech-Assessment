@@ -17,6 +17,7 @@ from tenacity import (
 
 from app.config import settings
 from app.domain.models import TreeData, SurveyData, OrchardStatistics
+from app.infrastructure.api_constants import AeroboticsAPIEndpoints, APIConstants
 
 
 # DTOs for API responses (infrastructure concern)
@@ -55,9 +56,9 @@ class ExternalAPIClient:
             base_url=self.base_url,
             headers={
                 "Authorization": f"Bearer {self.api_key}",
-                "accept": "application/json",
+                "accept": APIConstants.CONTENT_TYPE_JSON,
             },
-            timeout=30.0,
+            timeout=APIConstants.DEFAULT_TIMEOUT,
         )
     
     async def close(self):
@@ -124,7 +125,7 @@ class ExternalAPIClient:
         """
         data = await self._make_request(
             "GET", 
-            f"/farming/surveys/",
+            AeroboticsAPIEndpoints.SURVEYS,
             params={"orchard_id": orchard_id}
         )
         response = SurveysResponse(**data)
@@ -150,7 +151,7 @@ class ExternalAPIClient:
         """
         data = await self._make_request(
             "GET", 
-            f"/farming/surveys/{survey_id}/tree_survey_summaries/"
+            AeroboticsAPIEndpoints.get_survey_summaries(survey_id)
         )
         return OrchardStatistics(**data)
     
@@ -169,7 +170,7 @@ class ExternalAPIClient:
         """
         data = await self._make_request(
             "GET", 
-            f"/farming/surveys/{survey_id}/tree_surveys/"
+            AeroboticsAPIEndpoints.get_tree_surveys(survey_id)
         )
         response = TreeSurveysResponse(**data)
         return response.results
