@@ -1,0 +1,65 @@
+"""
+Application configuration using Pydantic settings.
+"""
+from pydantic_settings import BaseSettings
+from pydantic import Field
+
+
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
+    
+    # External API Configuration
+    external_api_base_url: str = Field(
+        default="https://api.example.com",
+        description="Base URL for the external API"
+    )
+    external_api_key: str = Field(
+        default="",
+        description="API key for authentication"
+    )
+    
+    # Retry Configuration
+    max_retry_attempts: int = Field(
+        default=3,
+        description="Maximum number of retry attempts for API calls"
+    )
+    retry_backoff_multiplier: int = Field(
+        default=1,
+        description="Multiplier for exponential backoff"
+    )
+    retry_min_wait: int = Field(
+        default=4,
+        description="Minimum wait time in seconds between retries"
+    )
+    retry_max_wait: int = Field(
+        default=10,
+        description="Maximum wait time in seconds between retries"
+    )
+    
+    # Missing Tree Detection Parameters
+    missing_tree_threshold_multiplier: float = Field(
+        default=1.5,
+        description="Multiplier for expected tree spacing to detect gaps"
+    )
+    
+    # Application Settings
+    app_name: str = Field(
+        default="Agrotech Geospatial Analytics API",
+        description="Application name"
+    )
+    app_version: str = Field(
+        default="1.0.0",
+        description="Application version"
+    )
+    debug: bool = Field(
+        default=False,
+        description="Debug mode"
+    )
+    
+    class Config:
+        env_file = ".env"
+        case_sensitive = False
+
+
+# Global settings instance
+settings = Settings()
