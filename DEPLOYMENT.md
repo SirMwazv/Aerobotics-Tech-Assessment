@@ -41,7 +41,7 @@ The repository includes a `render.yaml` blueprint for automated deployment.
 4. **Deploy**:
    - Render will automatically build and deploy your Docker container
    - Monitor the deployment logs in the dashboard
-   - Once deployed, your API will be available at: `https://agrotech-geospatial-api.onrender.com`
+   - Once deployed, your API will be available at: `https://mwazvita-mutowo-aerobotics-tech.onrender.com`
 
 ### Option 2: Manual Deployment
 
@@ -231,7 +231,7 @@ Render Pro plans support:
 
 Once deployed, your API will be available at:
 
-- **Base URL**: `https://your-service.onrender.com`
+- **Base URL**: `https://mwazvita-mutowo-aerobotics-tech.onrender.com`
 - **Health Check**: `GET /health`
 - **API Docs**: `GET /docs`
 - **Missing Trees**: `GET /api/v1/orchards/{orchard_id}/missing-trees`

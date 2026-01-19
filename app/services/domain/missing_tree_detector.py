@@ -4,7 +4,7 @@ Domain service: Missing tree detection using spatial analysis and agronomic sign
 from typing import List, Tuple, Optional
 import numpy as np
 
-from app.infrastructure.external_api_client import TreeData
+from app.domain.models import TreeData, OrchardStatistics
 from app.utils.geo_projection import (
     project_to_meters,
     project_to_latlon,
@@ -44,7 +44,7 @@ class MissingTreeDetector:
     def detect_missing_trees(
         self,
         trees: List[TreeData],
-        statistics: 'OrchardStatistics',
+        statistics: OrchardStatistics,
         polygon_coords: List[List[float]],
     ) -> List[Tuple[float, float]]:
         """
@@ -117,7 +117,7 @@ class MissingTreeDetector:
     def _filter_healthy_trees(
         self,
         trees: List[TreeData],
-        statistics: 'OrchardStatistics',
+        statistics: OrchardStatistics,
     ) -> List[TreeData]:
         """
         Filter out unhealthy trees using survey-level statistics.

@@ -62,17 +62,17 @@
 
 3. **Your API will be live at**:
    ```
-   https://agrotech-geospatial-api.onrender.com
+   https://mwazvita-mutowo-aerobotics-tech.onrender.com
    ```
 
 ## Testing the API
 
 ```bash
 # Health check
-curl https://your-service.onrender.com/health
+curl https://mwazvita-mutowo-aerobotics-tech.onrender.com/health
 
 # Get missing trees
-curl https://your-service.onrender.com/api/v1/orchards/216269/missing-trees
+curl https://mwazvita-mutowo-aerobotics-tech.onrender.com/api/v1/orchards/216269/missing-trees
 ```
 
 For detailed instructions, see:
