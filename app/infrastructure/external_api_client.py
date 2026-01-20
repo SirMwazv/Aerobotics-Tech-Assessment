@@ -65,6 +65,14 @@ class ExternalAPIClient:
         """Close the HTTP client."""
         await self.client.aclose()
     
+    async def __aenter__(self) -> "ExternalAPIClient":
+        """Async context manager entry."""
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Async context manager exit - ensures client is closed."""
+        await self.close()
+    
     @retry(
         stop=stop_after_attempt(settings.max_retry_attempts),
         wait=wait_exponential(

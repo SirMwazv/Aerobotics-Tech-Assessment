@@ -7,7 +7,7 @@ Provides utilities for:
 - Row/column pattern detection
 - Polygon operations
 """
-from typing import List, Tuple, Optional
+from typing import Optional
 import numpy as np
 from scipy.spatial import KDTree
 from shapely.geometry import Point, Polygon
@@ -16,7 +16,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def build_kdtree(coordinates: List[Tuple[float, float]]) -> KDTree:
+def build_kdtree(coordinates: list[tuple[float, float]]) -> KDTree:
     """
     Build a KD-Tree for efficient spatial queries.
     
@@ -32,7 +32,7 @@ def build_kdtree(coordinates: List[Tuple[float, float]]) -> KDTree:
 
 def calculate_nearest_neighbor_distances(
     kdtree: KDTree,
-    coordinates: List[Tuple[float, float]]
+    coordinates: list[tuple[float, float]]
 ) -> np.ndarray:
     """
     Calculate the distance to the nearest neighbor for each point.
@@ -53,7 +53,7 @@ def calculate_nearest_neighbor_distances(
 
 def estimate_tree_spacing(
     kdtree: KDTree,
-    coordinates: List[Tuple[float, float]]
+    coordinates: list[tuple[float, float]]
 ) -> float:
     """
     Estimate expected tree spacing using median nearest-neighbor distance.
@@ -72,8 +72,8 @@ def estimate_tree_spacing(
 
 
 def point_in_polygon(
-    point: Tuple[float, float],
-    polygon_coords: List[Tuple[float, float]]
+    point: tuple[float, float],
+    polygon_coords: list[tuple[float, float]]
 ) -> bool:
     """
     Check if a point is inside a polygon.
@@ -91,8 +91,8 @@ def point_in_polygon(
 
 
 def point_in_polygon_with_buffer(
-    point: Tuple[float, float],
-    polygon_coords: List[Tuple[float, float]],
+    point: tuple[float, float],
+    polygon_coords: list[tuple[float, float]],
     buffer_distance: float = 0.0
 ) -> bool:
     """
@@ -120,7 +120,7 @@ def point_in_polygon_with_buffer(
 
 
 def distance_to_nearest_tree(
-    point: Tuple[float, float],
+    point: tuple[float, float],
     kdtree: KDTree
 ) -> float:
     """
@@ -138,10 +138,10 @@ def distance_to_nearest_tree(
 
 
 def find_tree_pairs_with_gaps_optimized(
-    coordinates: List[Tuple[float, float]],
+    coordinates: list[tuple[float, float]],
     threshold_distance: float,
     max_search_radius: Optional[float] = None
-) -> List[Tuple[int, int, float]]:
+) -> list[tuple[int, int, float]]:
     """
     Find pairs of trees with gaps larger than the threshold.
     
@@ -188,9 +188,9 @@ def find_tree_pairs_with_gaps_optimized(
 
 def find_tree_pairs_with_gaps(
     kdtree: KDTree,
-    coordinates: List[Tuple[float, float]],
+    coordinates: list[tuple[float, float]],
     threshold_distance: float
-) -> List[Tuple[int, int, float]]:
+) -> list[tuple[int, int, float]]:
     """
     Find pairs of trees with gaps larger than the threshold.
     
@@ -208,9 +208,9 @@ def find_tree_pairs_with_gaps(
 
 
 def calculate_midpoint(
-    point1: Tuple[float, float],
-    point2: Tuple[float, float]
-) -> Tuple[float, float]:
+    point1: tuple[float, float],
+    point2: tuple[float, float]
+) -> tuple[float, float]:
     """
     Calculate the midpoint between two points.
     
@@ -227,11 +227,11 @@ def calculate_midpoint(
 
 
 def interpolate_points_in_gap(
-    point1: Tuple[float, float],
-    point2: Tuple[float, float],
+    point1: tuple[float, float],
+    point2: tuple[float, float],
     expected_spacing: float,
     gap_distance: float
-) -> List[Tuple[float, float]]:
+) -> list[tuple[float, float]]:
     """
     Generate evenly-spaced interpolated points within a gap.
     
@@ -270,9 +270,9 @@ def interpolate_points_in_gap(
 
 
 def detect_row_orientation(
-    coordinates: List[Tuple[float, float]],
+    coordinates: list[tuple[float, float]],
     num_samples: int = 100
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """
     Detect the primary row orientation of an orchard using nearest-neighbor analysis.
     
@@ -335,9 +335,9 @@ def detect_row_orientation(
 
 
 def estimate_row_and_column_spacing(
-    coordinates: List[Tuple[float, float]],
+    coordinates: list[tuple[float, float]],
     row_angle: float
-) -> Tuple[float, float]:
+) -> tuple[float, float]:
     """
     Estimate spacing in row and cross-row (column) directions.
     
@@ -399,7 +399,7 @@ def estimate_row_and_column_spacing(
 
 
 def calculate_local_density(
-    point: Tuple[float, float],
+    point: tuple[float, float],
     kdtree: KDTree,
     radius: float
 ) -> float:
@@ -420,10 +420,10 @@ def calculate_local_density(
 
 
 def score_candidate_location(
-    candidate: Tuple[float, float],
+    candidate: tuple[float, float],
     kdtree: KDTree,
     expected_spacing: float,
-    polygon_coords: List[Tuple[float, float]],
+    polygon_coords: list[tuple[float, float]],
     row_spacing: Optional[float] = None,
     col_spacing: Optional[float] = None,
     row_angle: Optional[float] = None

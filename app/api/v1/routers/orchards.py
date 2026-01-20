@@ -1,13 +1,18 @@
 """
 API router for orchard endpoints.
 """
-from fastapi import APIRouter, HTTPException, Path
+from fastapi import APIRouter, HTTPException, Path, Request
 from typing import Annotated
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.api.dependencies import OrchardServiceDep
 from app.api.v1.models.responses import MissingTreesResponse, MissingTreeLocation
 from app.infrastructure.external_api_client import ExternalAPIError
+from app.config import settings
 
+# Create limiter instance
+limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(
     prefix="/orchards",
@@ -54,10 +59,15 @@ router = APIRouter(
         },
         500: {
             "description": "Internal server error or external API failure",
+        },
+        429: {
+            "description": "Rate limit exceeded",
         }
     }
 )
+@limiter.limit(f"{settings.rate_limit_requests}/minute")
 async def get_missing_trees(
+    request: Request,
     orchard_id: Annotated[int, Path(description="Unique identifier for the orchard")],
     orchard_service: OrchardServiceDep,
 ) -> MissingTreesResponse:

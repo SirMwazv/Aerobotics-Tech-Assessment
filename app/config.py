@@ -68,6 +68,18 @@ class Settings(BaseSettings):
         description="Logging level (DEBUG, INFO, WARNING, ERROR)"
     )
     
+    # CORS Configuration
+    cors_origins: list[str] = Field(
+        default=["*"],
+        description="Allowed CORS origins (use specific origins in production)"
+    )
+    
+    # Rate Limiting
+    rate_limit_requests: int = Field(
+        default=100,
+        description="Maximum requests per minute per client"
+    )
+    
     # Application Settings
     app_name: str = Field(
         default="Mwazvita Mutowo Aerobotics Tech Assessment",

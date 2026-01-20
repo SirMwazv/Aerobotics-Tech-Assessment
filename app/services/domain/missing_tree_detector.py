@@ -9,10 +9,11 @@ in orchards using:
 - Row/column pattern detection
 - Candidate scoring and ranking
 """
-from typing import List, Tuple, Optional
+from typing import Optional
 from dataclasses import dataclass
 import numpy as np
 import logging
+from scipy.spatial import KDTree
 
 from app.domain.models import TreeData, OrchardStatistics
 from app.utils.geo_projection import (
@@ -75,7 +76,7 @@ class ScoredCandidate:
     score: float
     
     @property
-    def coordinates(self) -> Tuple[float, float]:
+    def coordinates(self) -> tuple[float, float]:
         return (self.x, self.y)
 
 
@@ -124,10 +125,10 @@ class MissingTreeDetector:
     
     def detect_missing_trees(
         self,
-        trees: List[TreeData],
+        trees: list[TreeData],
         statistics: OrchardStatistics,
-        polygon_coords: List[List[float]],
-    ) -> List[Tuple[float, float]]:
+        polygon_coords: list[list[float]],
+    ) -> list[tuple[float, float]]:
         """
         Detect missing tree locations in an orchard.
         
@@ -231,9 +232,9 @@ class MissingTreeDetector:
     
     def _filter_healthy_trees(
         self,
-        trees: List[TreeData],
+        trees: list[TreeData],
         statistics: OrchardStatistics,
-    ) -> List[TreeData]:
+    ) -> list[TreeData]:
         """
         Filter out unhealthy trees using survey-level statistics.
         
@@ -275,10 +276,10 @@ class MissingTreeDetector:
     
     def _generate_candidates(
         self,
-        projected_coords: List[Tuple[float, float]],
-        gaps: List[Tuple[int, int, float]],
+        projected_coords: list[tuple[float, float]],
+        gaps: list[tuple[int, int, float]],
         expected_spacing: float,
-    ) -> List[Tuple[float, float]]:
+    ) -> list[tuple[float, float]]:
         """
         Generate candidate missing tree locations from detected gaps.
         
@@ -322,9 +323,9 @@ class MissingTreeDetector:
     
     def _deduplicate_candidates(
         self,
-        candidates: List[Tuple[float, float]],
+        candidates: list[tuple[float, float]],
         min_distance: float,
-    ) -> List[Tuple[float, float]]:
+    ) -> list[tuple[float, float]]:
         """
         Remove duplicate candidates that are too close together.
         
@@ -364,14 +365,14 @@ class MissingTreeDetector:
     
     def _score_candidates(
         self,
-        candidates: List[Tuple[float, float]],
-        kdtree,
+        candidates: list[tuple[float, float]],
+        kdtree: KDTree,
         expected_spacing: float,
-        polygon_coords: List[Tuple[float, float]],
+        polygon_coords: list[tuple[float, float]],
         row_angle: Optional[float] = None,
         row_spacing: Optional[float] = None,
         col_spacing: Optional[float] = None,
-    ) -> List[ScoredCandidate]:
+    ) -> list[ScoredCandidate]:
         """
         Score all candidates and return ranked list.
         
@@ -411,11 +412,11 @@ class MissingTreeDetector:
     
     def _validate_candidates(
         self,
-        scored_candidates: List[ScoredCandidate],
-        polygon_coords: List[Tuple[float, float]],
-        kdtree,
+        scored_candidates: list[ScoredCandidate],
+        polygon_coords: list[tuple[float, float]],
+        kdtree: KDTree,
         expected_spacing: float,
-    ) -> List[ScoredCandidate]:
+    ) -> list[ScoredCandidate]:
         """
         Validate candidate missing tree locations.
         
