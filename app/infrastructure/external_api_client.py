@@ -39,7 +39,18 @@ class SurveysResponse(BaseModel):
 
 class ExternalAPIError(Exception):
     """Custom exception for external API errors."""
-    pass
+    
+    def __init__(self, message: str, status_code: int = 500):
+        """
+        Initialize the error with message and status code.
+        
+        Args:
+            message: Error message
+            status_code: HTTP status code from the external API
+        """
+        super().__init__(message)
+        self.status_code = status_code
+        self.message = message
 
 
 class ExternalAPIClient:
@@ -111,12 +122,13 @@ class ExternalAPIClient:
             # Retry on server errors (5xx)
             if e.response.status_code >= 500:
                 raise
-            # Don't retry on client errors (4xx)
+            # Don't retry on client errors (4xx) - pass through status code
             raise ExternalAPIError(
-                f"API request failed: {e.response.status_code} - {e.response.text}"
+                f"API request failed: {e.response.status_code} - {e.response.text}",
+                status_code=e.response.status_code
             )
         except httpx.RequestError as e:
-            raise ExternalAPIError(f"API request error: {str(e)}")
+            raise ExternalAPIError(f"API request error: {str(e)}", status_code=503)
     
     async def get_survey_by_orchard(self, orchard_id: int) -> SurveyData:
         """

@@ -47,13 +47,15 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
                 extra={
                     "path": request.url.path,
                     "method": request.method,
+                    "status_code": e.status_code,
                 }
             )
+            # Pass through the original status code from the external API
             return JSONResponse(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                status_code=e.status_code,
                 content={
-                    "error": "External service unavailable",
-                    "detail": str(e),
+                    "error": "External API error",
+                    "detail": e.message,
                 }
             )
         
