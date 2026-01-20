@@ -4,7 +4,7 @@
 
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/SirMwazv/Aerobotics-Tech-Assessment.git
    cd Aerobotics-Tech-Assessment
    ```
 

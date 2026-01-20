@@ -22,9 +22,6 @@ class MissingTreesResponse(BaseModel):
     orchard_id: str = Field(
         description="Unique identifier for the orchard"
     )
-    missing_tree_count: int = Field(
-        description="Number of missing trees detected"
-    )
     locations: List[MissingTreeLocation] = Field(
         description="Coordinates of detected missing tree locations"
     )
@@ -32,12 +29,12 @@ class MissingTreesResponse(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "orchard_id": "orchard_123",
-                "missing_tree_count": 3,
+                "orchard_id": "216269",
                 "locations": [
-                    {"latitude": 34.0522, "longitude": -118.2437},
-                    {"latitude": 34.0523, "longitude": -118.2438},
-                    {"latitude": 34.0524, "longitude": -118.2439},
+                    {"latitude": -32.328023, "longitude": 18.826754},
+                    {"latitude": -32.327970, "longitude": 18.826769},
+                    {"latitude": -32.328037, "longitude": 18.826818},
                 ]
             }
         }
+

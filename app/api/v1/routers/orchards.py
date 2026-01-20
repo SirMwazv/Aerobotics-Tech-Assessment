@@ -40,11 +40,10 @@ router = APIRouter(
             "content": {
                 "application/json": {
                     "example": {
-                        "orchard_id": "orchard_123",
-                        "missing_tree_count": 3,
+                        "orchard_id": "216269",
                         "locations": [
-                            {"latitude": 34.0522, "longitude": -118.2437},
-                            {"latitude": 34.0523, "longitude": -118.2438},
+                            {"latitude": -32.328023, "longitude": 18.826754},
+                            {"latitude": -32.327970, "longitude": 18.826769},
                         ]
                     }
                 }
@@ -82,7 +81,6 @@ async def get_missing_trees(
         # Transform to response model
         return MissingTreesResponse(
             orchard_id=str(orchard_id),
-            missing_tree_count=len(locations),
             locations=[
                 MissingTreeLocation(latitude=lat, longitude=lon)
                 for lat, lon in locations

@@ -1,244 +1,211 @@
-# Agrotech Geospatial Analytics API
+# Mwazvita Mutowo - Aerobotics Tech Assessment
 
-A production-ready FastAPI application for detecting missing trees in orchards using geospatial analysis and agronomic signals.
+A FastAPI application for detecting missing trees in orchards using geospatial analysis.
 
-## Features
+**Live Demo:** https://mwazvita-mutowo-aerobotics-tech.onrender.com
 
-- **Missing Tree Detection**: Identifies locations of missing trees using statistical filtering and spatial gap analysis
-- **Geospatial Analysis**: Projects coordinates to planar systems, builds KD-Trees for spatial indexing
-- **Robust Error Handling**: Automatic retries with exponential backoff for external API calls
-- **SOLID Architecture**: Clean separation of concerns with dependency injection
-- **OpenAPI Documentation**: Auto-generated interactive API documentation
+**Swagger Documentation:** https://mwazvita-mutowo-aerobotics-tech.onrender.com/docs
 
-## Architecture
+---
 
-The application follows a layered architecture:
+## Quick Start
 
-```
-├── API Layer (routers/controllers)
-│   └── FastAPI endpoints with no business logic
-├── Application Layer (services/application)
-│   └── Orchestration and coordination
-├── Domain Layer (services/domain)
-│   └── Core business logic and algorithms
-├── Infrastructure Layer (infrastructure)
-│   └── External API client with retry logic
-└── Utilities (utils)
-    └── Geospatial projections and spatial helpers
-```
+### Option 1: Run with Docker (Recommended)
 
-## Installation
-
-### Prerequisites
-
-- Python 3.9 or higher
-- pip
-
-### Setup
-
-1. Clone the repository:
 ```bash
-cd /Users/mwazvitamutowo/Aerobotics-Tech-Assessment
+# Clone the repository
+git clone https://github.com/SirMwazv/Aerobotics-Tech-Assessment.git
+cd Aerobotics-Tech-Assessment
+
+# Create environment file
+cp .env.example .env
+
+# Build and run with Docker Compose
+docker-compose up --build
 ```
 
-2. Create a virtual environment:
+The API will be available at `http://localhost:8000`
+
+### Option 2: Run Locally
+
 ```bash
+# Clone the repository
+git clone https://github.com/SirMwazv/Aerobotics-Tech-Assessment.git
+cd Aerobotics-Tech-Assessment
+
+# Create virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
 
-3. Install dependencies:
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-4. Configure environment variables:
-```bash
+# Create environment file
 cp .env.example .env
-# Edit .env with your configuration
-```
 
-## Configuration
-
-Edit the `.env` file to configure the application:
-
-```env
-# External API Configuration
-EXTERNAL_API_BASE_URL=https://api.example.com
-EXTERNAL_API_KEY=your_api_key_here
-
-# Retry Configuration
-MAX_RETRY_ATTEMPTS=3
-RETRY_BACKOFF_MULTIPLIER=1
-RETRY_MIN_WAIT=4
-RETRY_MAX_WAIT=10
-
-# Missing Tree Detection Parameters
-MISSING_TREE_THRESHOLD_MULTIPLIER=1.5
-```
-
-## Running the Application
-
-### Development Server
-
-```bash
+# Run the application
 uvicorn app.main:app --reload
 ```
 
 The API will be available at `http://localhost:8000`
 
-### Production Server
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
-```
+---
 
 ## API Documentation
 
-Once the server is running, access the interactive API documentation:
+- **Swagger UI:** http://localhost:8000/docs
+- **ReDoc:** http://localhost:8000/redoc
 
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **OpenAPI JSON**: http://localhost:8000/openapi.json
-
-## API Endpoints
-
-### Get Missing Tree Locations
+### Endpoint
 
 ```
 GET /api/v1/orchards/{orchard_id}/missing-trees
 ```
 
-**Description**: Detects and returns the locations of missing trees in an orchard.
+**Example Request:**
+```bash
+curl http://localhost:8000/api/v1/orchards/216269/missing-trees
+```
 
-**Parameters**:
-- `orchard_id` (path): Unique identifier for the orchard
-
-**Response**:
+**Example Response:**
 ```json
 {
-  "orchard_id": "orchard_123",
-  "missing_tree_count": 3,
+  "orchard_id": "216269",
   "locations": [
-    {"latitude": 34.0522, "longitude": -118.2437},
-    {"latitude": 34.0523, "longitude": -118.2438},
-    {"latitude": 34.0524, "longitude": -118.2439}
+    {"latitude": -32.328023, "longitude": 18.826754},
+    {"latitude": -32.327970, "longitude": 18.826769},
+    {"latitude": -32.328037, "longitude": 18.826818}
   ]
 }
 ```
 
-**Example**:
-```bash
-curl http://localhost:8000/api/v1/orchards/orchard_123/missing-trees
-```
+---
 
-### Health Check
+## How the Algorithm Works
 
-```
-GET /health
-```
+The missing tree detection works in simple steps:
 
-Returns the health status of the API.
+### 1. Get the Data
+We fetch tree survey data from Aerobotics API, which includes each tree's GPS location, size (canopy area), and health indicator (NDRE).
 
-## Missing Tree Detection Algorithm
+### 2. Remove Unhealthy Trees
+Before analyzing patterns, we filter out sick or dying trees that might skew our results. We use a simple rule: if a tree's size or health is significantly below average (more than 2 standard deviations), we exclude it from the pattern analysis.
 
-The algorithm follows these steps:
+**Why?** Dead or dying trees have abnormal sizes that would confuse our spacing calculations.
 
-1. **Statistical Filtering**: Filters out unhealthy trees using 2-sigma rule:
-   - Excludes trees where `canopy_area < (mean - 2 * std)`
-   - Excludes trees where `ndre < (mean - 2 * std)`
+### 3. Convert Coordinates
+GPS coordinates (latitude/longitude) are in degrees, which aren't useful for measuring distances. We convert them to meters using a standard map projection (UTM).
 
-2. **Coordinate Projection**: Projects lat/lon to planar coordinates (UTM) for accurate distance calculations
+**Why?** Now we can actually measure "this tree is 10 meters from that tree."
 
-3. **Spatial Indexing**: Builds a KD-Tree for efficient spatial queries
+### 4. Build a Search Index
+We organize all tree locations into a special data structure called a KD-Tree that makes finding nearby trees very fast.
 
-4. **Spacing Estimation**: Calculates expected tree spacing using median nearest-neighbor distance
+**Why?** With 10,000 trees, checking every pair would be slow. The KD-Tree makes searches almost instant.
 
-5. **Gap Detection**: Identifies tree pairs with distance > `expected_spacing * threshold_multiplier`
+### 5. Figure Out Normal Spacing
+We look at how far each tree is from its nearest neighbor and find the typical (median) distance. This tells us the expected spacing in the orchard.
 
-6. **Location Estimation**: Generates candidate locations at midpoints of gaps
+**Example:** If most trees are about 10 meters apart, expected spacing = 10m.
 
-7. **Validation**: Ensures candidates are:
-   - Inside the orchard polygon
-   - Sufficiently far from existing trees (>= 0.5 * expected_spacing)
+### 6. Find the Gaps
+We look for pairs of trees that are unusually far apart. If two trees are 25 meters apart when they should be 10 meters apart, there's probably one or more trees missing between them.
 
-8. **Limiting**: Returns up to `missing_tree_count` locations
+**For large gaps:** If a gap is big enough for multiple trees, we calculate how many could fit and mark each potential location.
 
-## Technology Stack
+### 7. Score and Rank Candidates
+Not all gaps are equally likely to be missing trees. We score each candidate location based on:
+- How well it fits the expected spacing pattern
+- Whether it has neighbors (but isn't crowded)
+- How far it is from the orchard edge
+- Whether it aligns with the orchard's row pattern
 
-- **FastAPI**: Modern web framework for building APIs
-- **Pydantic**: Data validation and settings management
-- **Shapely**: Geometric operations and polygon handling
-- **PyProj**: Coordinate transformations and projections
-- **SciPy**: KD-Tree implementation for spatial indexing
-- **Tenacity**: Retry logic with exponential backoff
-- **httpx**: Async HTTP client for external API calls
+### 8. Validate and Return
+Finally, we check that each candidate is actually inside the orchard boundary, then return the best locations as GPS coordinates.
+
+### Important Considerations
+
+- **Edge cases:** Trees near orchard boundaries might appear as gaps but aren't actually missing
+- **Planting patterns:** Most orchards have regular rows, which the algorithm tries to detect and use
+- **Accuracy vs. completeness:** We prioritize accuracy (fewer false positives) over finding every possible gap
+- **Data quality:** Results are only as good as the input data from surveys
+
+---
 
 ## Project Structure
 
 ```
 app/
-├── __init__.py
-├── main.py                          # FastAPI application
-├── config.py                        # Configuration management
-├── api/
-│   ├── dependencies.py              # Dependency injection
-│   └── v1/
-│       ├── routers/
-│       │   └── orchards.py          # Orchard endpoints
-│       └── models/
-│           └── responses.py         # Response models
+├── api/                    # HTTP endpoints
+│   └── v1/routers/         # API routes (controllers)
+├── domain/                 # Core data models
 ├── services/
-│   ├── application/
-│   │   └── orchard_service.py       # Orchestration layer
-│   └── domain/
-│       └── missing_tree_detector.py # Detection algorithm
-├── infrastructure/
-│   └── external_api_client.py       # External API integration
-├── utils/
-│   ├── geo_projection.py            # Coordinate transformations
-│   └── spatial_helpers.py           # Spatial utilities
-└── middleware/
-    └── error_handler.py             # Global error handling
+│   ├── application/        # Orchestration layer
+│   └── domain/             # Business logic & algorithm
+├── infrastructure/         # External API client
+├── utils/                  # Helper functions
+├── middleware/             # Error handling
+├── config.py               # Configuration
+└── main.py                 # Application entry point
 ```
 
-## Error Handling
+---
 
-The application implements comprehensive error handling:
+## Configuration
 
-- **Retry Logic**: Automatic retries with exponential backoff for transient failures
-- **Global Middleware**: Catches unhandled exceptions and returns consistent error responses
-- **Custom Exceptions**: Domain-specific exceptions for better error tracking
-- **Logging**: Structured logging for debugging and monitoring
+All settings can be configured via environment variables in `.env`:
 
-## SOLID Principles
+```env
+# API Settings
+EXTERNAL_API_BASE_URL=https://api.aerobotics.com
+EXTERNAL_API_KEY=your_api_key
 
-The codebase follows SOLID principles:
+# Detection Parameters (optional - defaults shown)
+MISSING_TREE_THRESHOLD_MULTIPLIER=1.5    # How big a gap triggers detection
+MISSING_TREE_SIGMA_MULTIPLIER=2.0        # Sensitivity for filtering unhealthy trees
+MISSING_TREE_USE_ROW_DETECTION=True      # Try to detect row patterns
+```
 
-- **Single Responsibility**: Each class has one reason to change
-- **Open/Closed**: Open for extension, closed for modification
-- **Liskov Substitution**: Subtypes are substitutable for their base types
-- **Interface Segregation**: Clients depend only on methods they use
-- **Dependency Inversion**: Depend on abstractions, not concretions
+---
 
-## Development
-
-### Code Style
-
-The project follows PEP 8 style guidelines. Use type hints for better code quality.
-
-### Testing
-
-(To be implemented)
+## Running Tests
 
 ```bash
-pytest tests/
+# Activate virtual environment if not already active
+source venv/bin/activate
+
+# Run all tests
+pytest tests/ -v
 ```
 
-## License
+---
 
-This project is part of the Aerobotics Technical Assessment.
+## Technology Stack
+
+| Technology | Purpose |
+|------------|---------|
+| FastAPI | Web framework |
+| Pydantic | Data validation |
+| SciPy | Spatial indexing (KD-Tree) |
+| PyProj | Coordinate transformations |
+| Shapely | Geometric operations |
+| Docker | Containerization |
+
+---
+
+## Architecture
+
+The application follows clean architecture principles:
+
+- **API Layer:** Handles HTTP requests, no business logic
+- **Service Layer:** Orchestrates workflows and coordinates components
+- **Domain Layer:** Contains the core detection algorithm
+- **Infrastructure Layer:** Manages external API communication
+
+This separation makes the code easier to test, maintain, and extend.
+
+---
 
 ## Contact
 
-For questions or support, please contact the development team.
+Mwazvita Mutowo

@@ -70,7 +70,7 @@ class Settings(BaseSettings):
     
     # Application Settings
     app_name: str = Field(
-        default="Agrotech Geospatial Analytics API",
+        default="Mwazvita Mutowo Aerobotics Tech Assessment",
         description="Application name"
     )
     app_version: str = Field(
