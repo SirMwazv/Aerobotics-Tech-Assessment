@@ -83,45 +83,59 @@ curl http://localhost:8000/api/v1/orchards/216269/missing-trees
 
 ## How the Algorithm Works
 
-The missing tree detection works in 8 simple steps:
+The missing tree detection works in 11 steps:
 
-### 1. Get the Data
-We fetch tree survey data from Aerobotics API, which includes each tree's GPS location, size (canopy area), and health indicator (NDRE).
-
-### 2. Remove Unhealthy Trees
-Before analyzing patterns, we filter out sick or dying trees that might skew our results. We use a simple rule: if a tree's size or health is significantly below average (more than 2 standard deviations), we exclude it from the pattern analysis.
+### Step 1: Filter Unhealthy Trees
+Before analyzing patterns, we filter out sick or dying trees that might skew our results. We use the 2-sigma rule: if a tree's size or health is significantly below average (more than 2 standard deviations), we exclude it from pattern analysis.
 
 **Why?** Dead or dying trees have abnormal sizes that would confuse our spacing calculations.
 
-### 3. Convert Coordinates
+### Step 2: Project Coordinates to Meters
 GPS coordinates (latitude/longitude) are in degrees, which aren't useful for measuring distances. We convert them to meters using a standard map projection (UTM).
 
 **Why?** Now we can actually measure "this tree is 10 meters from that tree."
 
-### 4. Build a Search Index
+### Step 3: Build KD-Tree for Spatial Indexing
 We organize all tree locations into a special data structure called a KD-Tree that makes finding nearby trees very fast.
 
 **Why?** With 10,000 trees, checking every pair would be slow. The KD-Tree makes searches almost instant.
 
-### 5. Figure Out Normal Spacing
+### Step 4: Estimate Expected Tree Spacing
 We look at how far each tree is from its nearest neighbor and find the typical (median) distance. This tells us the expected spacing in the orchard.
 
 **Example:** If most trees are about 10 meters apart, expected spacing = 10m.
 
-### 6. Find the Gaps
-We look for pairs of trees that are unusually far apart. If two trees are 25 meters apart when they should be 10 meters apart, there's probably one or more trees missing between them.
+### Step 5: Detect Row Orientation (Optional)
+We analyze the angles between neighboring trees to detect if the orchard has a regular row pattern. If confident enough, we estimate separate row and column spacing.
 
-**For large gaps:** If a gap is big enough for multiple trees, we calculate how many could fit and mark each potential location.
+**Why?** Orchards with regular rows have predictable patterns we can use.
 
-### 7. Score and Rank Candidates
-Not all gaps are equally likely to be missing trees. We score each candidate location based on:
-- How well it fits the expected spacing pattern
-- Whether it has neighbors (but isn't crowded)
-- How far it is from the orchard edge
-- Whether it aligns with the orchard's row pattern
+### Step 6: Detect Spatial Gaps
+We look for pairs of trees that are unusually far apart (more than 1.5× the expected spacing).
 
-### 8. Validate and Return
-Finally, we check that each candidate is actually inside the orchard boundary, then return the best locations as GPS coordinates.
+**For large gaps:** If a gap is big enough for multiple trees, we calculate how many could fit.
+
+### Step 7: Generate Candidate Locations
+For each detected gap, we interpolate where missing trees should be. Large gaps get multiple evenly-spaced candidate points.
+
+### Step 8: Score and Rank Candidates
+Not all gaps are equally likely to be missing trees. We score each candidate based on:
+- How well it fits the expected spacing pattern (30%)
+- Local density - has neighbors but isn't crowded (30%)
+- Distance from orchard boundary (20%)
+- Alignment with detected row pattern (20%)
+
+### Step 9: Validate Candidates
+We filter out candidates that:
+- Score below the minimum threshold
+- Are outside the orchard polygon (with buffer)
+- Are too close to existing trees
+
+### Step 10: Sort and Limit Results
+We sort candidates by score and return only the top N, where N is the known missing tree count from the survey.
+
+### Step 11: Convert Back to GPS
+Finally, we convert the validated candidate locations back from meters to latitude/longitude coordinates.
 
 ### Important Considerations
 
