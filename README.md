@@ -83,7 +83,7 @@ curl http://localhost:8000/api/v1/orchards/216269/missing-trees
 
 ## How the Algorithm Works
 
-The missing tree detection works in simple steps:
+The missing tree detection works in 8 simple steps:
 
 ### 1. Get the Data
 We fetch tree survey data from Aerobotics API, which includes each tree's GPS location, size (canopy area), and health indicator (NDRE).
